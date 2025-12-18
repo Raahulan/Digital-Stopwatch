@@ -1,0 +1,95 @@
+module digital_clock_top (
+	clk,
+	rst,
+	seg_sec_unit,
+	seg_sec_tens,
+	seg_min_unit,
+	seg_min_tens,
+	seg_hour_unit,
+	seg_hour_tens
+);
+	input wire clk;
+	input wire rst;
+	output wire [6:0] seg_sec_unit;
+	output wire [6:0] seg_sec_tens;
+	output wire [6:0] seg_min_unit;
+	output wire [6:0] seg_min_tens;
+	output wire [6:0] seg_hour_unit;
+	output wire [6:0] seg_hour_tens;
+	wire clk_1hz;
+	wire min_tick;
+	wire hour_tick;
+	wire [5:0] sec;
+	wire [5:0] min;
+	wire [4:0] hour;
+	clk_divider #(.N(26)) u_clk_div(
+		.clk(clk),
+		.rst(rst),
+		.clk_out(clk_1hz)
+	);
+	seconds_counter u_sec(
+		.clk(clk_1hz),
+		.rst(rst),
+		.en(1'b1),
+		.sec(sec),
+		.min_tick(min_tick)
+	);
+	minutes_counter u_min(
+		.clk(clk_1hz),
+		.rst(rst),
+		.en(min_tick),
+		.min(min),
+		.hour_tick(hour_tick)
+	);
+	hours_counter u_hr(
+		.clk(clk_1hz),
+		.rst(rst),
+		.en(hour_tick),
+		.hour(hour)
+	);
+	wire [3:0] sec_unit;
+	wire [3:0] sec_tens;
+	wire [3:0] min_unit;
+	wire [3:0] min_tens;
+	wire [3:0] hour_unit;
+	wire [3:0] hour_tens;
+	bcd_splitter u_sec_bcd(
+		.binary_in(sec),
+		.tens(sec_tens),
+		.units(sec_unit)
+	);
+	bcd_splitter u_min_bcd(
+		.binary_in(min),
+		.tens(min_tens),
+		.units(min_unit)
+	);
+	bcd_splitter u_hour_bcd(
+		.binary_in({1'b0, hour}),
+		.tens(hour_tens),
+		.units(hour_unit)
+	);
+	bcd_to_7seg u_seg_sec_unit(
+		.bcd(sec_unit),
+		.seg(seg_sec_unit)
+	);
+	bcd_to_7seg u_seg_sec_tens(
+		.bcd(sec_tens),
+		.seg(seg_sec_tens)
+	);
+	bcd_to_7seg u_seg_min_unit(
+		.bcd(min_unit),
+		.seg(seg_min_unit)
+	);
+	bcd_to_7seg u_seg_min_tens(
+		.bcd(min_tens),
+		.seg(seg_min_tens)
+	);
+	bcd_to_7seg u_seg_hour_unit(
+		.bcd(hour_unit),
+		.seg(seg_hour_unit)
+	);
+	bcd_to_7seg u_seg_hour_tens(
+		.bcd(hour_tens),
+		.seg(seg_hour_tens)
+	);
+endmodule

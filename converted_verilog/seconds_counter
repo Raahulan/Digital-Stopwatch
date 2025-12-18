@@ -1,0 +1,23 @@
+module seconds_counter (
+	clk,
+	rst,
+	en,
+	sec,
+	min_tick
+);
+	input wire clk;
+	input wire rst;
+	input wire en;
+	output reg [5:0] sec;
+	output wire min_tick;
+	always @(posedge clk or posedge rst)
+		if (rst)
+			sec <= 0;
+		else if (en) begin
+			if (sec == 59)
+				sec <= 0;
+			else
+				sec <= sec + 1;
+		end
+	assign min_tick = (sec == 59) && en;
+endmodule
